@@ -57,36 +57,46 @@ class Main {
         FileHeader header = diffFormatter.toFileHeader(diffEntry)
         header.toEditList().each{
           def s = diffEntry.newPath.size()
-          musicList << [s, it.endA + it.beginA, it.endB + it.beginB].findAll{ 0 < it }
+          musicList << [s, it.endA + it.beginA, it.endB + it.beginB].findAll{ 0 < it }.collect{it + 30}
         }
       }
       walk.dispose();
+      println musicList
 
       Synthesizer synthesizer = MidiSystem.getSynthesizer();
       synthesizer.open();
       Receiver receiver = synthesizer.getReceiver();
-      ShortMessage message = new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, musicList.flatten().sum() % 128, 0)
+//      ShortMessage message = new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, 10, 0)
+      ShortMessage message = new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, 65, 0)
       receiver.send(message, -1)
 
       def before1 = 60
       def before2 = 62
+      def r = new Random()
       musicList.eachWithIndex {lines, i ->
+        def ri = r.nextInt(2)
         lines.each{
-          def o = it <= 127 ? it : it % 127
+          def o = it <= 90 ? it : Math.max(it % 90, 60)
           message.setMessage(ShortMessage.NOTE_ON, before1, 127);
+          receiver.send(message, -1);
           message.setMessage(ShortMessage.NOTE_ON, before2, 127);
+          receiver.send(message, -1);
           message.setMessage(ShortMessage.NOTE_ON, o, 127);
           receiver.send(message, -1);
-          sleep(300)
+          sleep(200 * ri)
+          message.setMessage(ShortMessage.NOTE_OFF, before1, 127);
+          receiver.send(message, -1);
           before1 = before2
           before2 = o
         }
       }
-      def after1 = 60
-      def after2 = 62
+      def after1 = 67
+      def after2 = 69
       2.times{
         message.setMessage(ShortMessage.NOTE_ON, before1, 127);
+        receiver.send(message, -1);
         message.setMessage(ShortMessage.NOTE_ON, before2, 127);
+        receiver.send(message, -1);
         message.setMessage(ShortMessage.NOTE_ON, after1, 127);
         receiver.send(message, -1);
         sleep(300)
