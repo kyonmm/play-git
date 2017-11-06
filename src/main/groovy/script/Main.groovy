@@ -82,6 +82,18 @@ class Main {
           before2 = o
         }
       }
+      def after1 = 60
+      def after2 = 62
+      2.times{
+        message.setMessage(ShortMessage.NOTE_ON, before1, 127);
+        message.setMessage(ShortMessage.NOTE_ON, before2, 127);
+        message.setMessage(ShortMessage.NOTE_ON, after1, 127);
+        receiver.send(message, -1);
+        sleep(300)
+        before1 = before2
+        before2 = after1
+        after1 = after2
+      }
       sleep(2_000)
       receiver.send(new ShortMessage(ShortMessage.CONTROL_CHANGE, 0, 0x78, 100), -1);
       sleep(1_000)
