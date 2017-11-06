@@ -47,7 +47,7 @@ class Main {
       }
       lastCommit = fromCommit
       println fromCommit.id
-      RevCommit toCommit = walk.parseCommit(repository.resolve("HEAD^"));
+      RevCommit toCommit = walk.parseCommit(repository.resolve("HEAD^^"));
       RevTree fromTree = fromCommit.getTree();
       RevTree toTree = toCommit.getTree();
       DiffFormatter diffFormatter = new DiffFormatter(System.out);
@@ -57,7 +57,7 @@ class Main {
         FileHeader header = diffFormatter.toFileHeader(diffEntry)
         header.toEditList().each{
           def s = diffEntry.newPath.size()
-          musicList << [it.endA + s, it.beginA + s, it.endB + s, it.beginB + s].findAll{ 0 < it }
+          musicList << [s, it.endA + it.beginA, it.endB + it.beginB].findAll{ 0 < it }
         }
       }
       walk.dispose();
@@ -68,22 +68,19 @@ class Main {
       ShortMessage message = new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, musicList.flatten().sum() % 128, 0)
       receiver.send(message, -1)
 
-      def played = []
+      def before1 = 60
+      def before2 = 62
       musicList.eachWithIndex {lines, i ->
-        played.each { playedLine ->
-          playedLine.each {
-            def o = it <= 127 ? it : it % 127
-            message.setMessage(ShortMessage.NOTE_ON, o, 127);
-            receiver.send(message, -1);
-          }
-        }
         lines.each{
           def o = it <= 127 ? it : it % 127
+          message.setMessage(ShortMessage.NOTE_ON, before1, 127);
+          message.setMessage(ShortMessage.NOTE_ON, before2, 127);
           message.setMessage(ShortMessage.NOTE_ON, o, 127);
           receiver.send(message, -1);
+          sleep(300)
+          before1 = before2
+          before2 = o
         }
-        played.add(lines)
-        sleep(500)
       }
       sleep(2_000)
       receiver.send(new ShortMessage(ShortMessage.CONTROL_CHANGE, 0, 0x78, 100), -1);
