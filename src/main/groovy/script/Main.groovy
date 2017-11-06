@@ -57,7 +57,7 @@ class Main {
         FileHeader header = diffFormatter.toFileHeader(diffEntry)
         header.toEditList().each{
           def s = diffEntry.newPath.size()
-          musicList << [s, it.endA + it.beginA, it.endB + it.beginB].collect{it % 7}.unique()
+          musicList << [s, it.endA + it.beginA, it.endB + it.beginB].unique()
         }
       }
       walk.dispose();
@@ -69,6 +69,13 @@ class Main {
       ShortMessage message = new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, musicList.flatten().size() % 128, 0)
       receiver.send(message, -1)
 
+      def os = [2,
+                4,
+                5,
+                7,
+                9,
+                11]
+
       def before1 = 60
       def before2 = 63
       def r = new Random()
@@ -77,16 +84,17 @@ class Main {
       message.setMessage(ShortMessage.NOTE_ON, before2, 127);
       receiver.send(message, -1);
       musicList.eachWithIndex {lines, i ->
-        def ri = r.nextInt(2)
-        lines.each{
-          def o = 67 + it
-          message.setMessage(ShortMessage.NOTE_ON, o, 127);
-          receiver.send(message, -1);
-          sleep(300)
-          message.setMessage(ShortMessage.NOTE_OFF, before1, 127);
-          receiver.send(message, -1);
-          before1 = before2
-          before2 = o
+        1.times{
+          lines.each{
+            def o = 60 + (os[it % os.size()])
+            message.setMessage(ShortMessage.NOTE_ON, o, 127);
+            receiver.send(message, -1);
+            sleep(300)
+            message.setMessage(ShortMessage.NOTE_OFF, before1, 127);
+            receiver.send(message, -1);
+            before1 = before2
+            before2 = o
+          }
         }
       }
 //      def after1 = 67
