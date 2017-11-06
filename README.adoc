@@ -1,0 +1,31 @@
+= GitログからMIDI音源生成
+
+:toc:
+:numbered:
+
+== 使いみち
+特に無い
+
+== 前提条件
+. Gitリポジトリがある
+. 非対話的に常にpullできる
+. チェックアウトしているブランチしかみない
+
+== 動作
+1分おきにpullしてきて謎の音楽を生成して鳴らす
+
+実行方法までは次のようにする
+
+----
+gradlew build
+cp build/distributions/play-git-1.0-SNAPSHOT.zip 好きなパス
+cd 好きなパス
+unzip play-git-1.0-SNAPSHOT.zip
+./bin/play-git local-git-repository-path
+----
+
+=== 注意
+. local-git-repository-pathの末尾に/とか入っていたら落ちる気がする。
+. git logが3件以上ないと落ちる
+. git pullが非対話的に進まないと落ちる
+.. そもそもpullできない状況のリポジトリも落ちる
