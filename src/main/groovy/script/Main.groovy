@@ -57,7 +57,7 @@ class Main {
         FileHeader header = diffFormatter.toFileHeader(diffEntry)
         header.toEditList().each{
           def s = diffEntry.newPath.size()
-          musicList << [s, it.endA + it.beginA, it.endB + it.beginB].collect{it % 14}.unique()
+          musicList << [s, it.endA + it.beginA, it.endB + it.beginB].collect{it % 7}.unique()
         }
       }
       walk.dispose();
@@ -66,21 +66,20 @@ class Main {
       Synthesizer synthesizer = MidiSystem.getSynthesizer();
       synthesizer.open();
       Receiver receiver = synthesizer.getReceiver();
-//      ShortMessage message = new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, 10, 0)
-      ShortMessage message = new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, 65, 0)
+      ShortMessage message = new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, musicList.flatten().size() % 128, 0)
       receiver.send(message, -1)
 
       def before1 = 60
       def before2 = 63
       def r = new Random()
+      message.setMessage(ShortMessage.NOTE_ON, before1, 127);
+      receiver.send(message, -1);
+      message.setMessage(ShortMessage.NOTE_ON, before2, 127);
+      receiver.send(message, -1);
       musicList.eachWithIndex {lines, i ->
         def ri = r.nextInt(2)
         lines.each{
-          def o = 60 + it
-          message.setMessage(ShortMessage.NOTE_ON, before1, 127);
-          receiver.send(message, -1);
-          message.setMessage(ShortMessage.NOTE_ON, before2, 127);
-          receiver.send(message, -1);
+          def o = 67 + it
           message.setMessage(ShortMessage.NOTE_ON, o, 127);
           receiver.send(message, -1);
           sleep(300)
