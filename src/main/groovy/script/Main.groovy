@@ -57,7 +57,7 @@ class Main {
         FileHeader header = diffFormatter.toFileHeader(diffEntry)
         header.toEditList().each{
           def s = diffEntry.newPath.size()
-          musicList << [s, it.endA + it.beginA, it.endB + it.beginB].findAll{ 0 < it }.collect{it + 30}
+          musicList << [s, it.endA + it.beginA, it.endB + it.beginB].collect{it % 14}.unique()
         }
       }
       walk.dispose();
@@ -71,39 +71,39 @@ class Main {
       receiver.send(message, -1)
 
       def before1 = 60
-      def before2 = 62
+      def before2 = 63
       def r = new Random()
       musicList.eachWithIndex {lines, i ->
         def ri = r.nextInt(2)
         lines.each{
-          def o = it <= 90 ? it : Math.max(it % 90, 60)
+          def o = 60 + it
           message.setMessage(ShortMessage.NOTE_ON, before1, 127);
           receiver.send(message, -1);
           message.setMessage(ShortMessage.NOTE_ON, before2, 127);
           receiver.send(message, -1);
           message.setMessage(ShortMessage.NOTE_ON, o, 127);
           receiver.send(message, -1);
-          sleep(200 * ri)
+          sleep(300)
           message.setMessage(ShortMessage.NOTE_OFF, before1, 127);
           receiver.send(message, -1);
           before1 = before2
           before2 = o
         }
       }
-      def after1 = 67
-      def after2 = 69
-      2.times{
-        message.setMessage(ShortMessage.NOTE_ON, before1, 127);
-        receiver.send(message, -1);
-        message.setMessage(ShortMessage.NOTE_ON, before2, 127);
-        receiver.send(message, -1);
-        message.setMessage(ShortMessage.NOTE_ON, after1, 127);
-        receiver.send(message, -1);
-        sleep(300)
-        before1 = before2
-        before2 = after1
-        after1 = after2
-      }
+//      def after1 = 67
+//      def after2 = 69
+//      2.times{
+//        message.setMessage(ShortMessage.NOTE_ON, before1, 127);
+//        receiver.send(message, -1);
+//        message.setMessage(ShortMessage.NOTE_ON, before2, 127);
+//        receiver.send(message, -1);
+//        message.setMessage(ShortMessage.NOTE_ON, after1, 127);
+//        receiver.send(message, -1);
+//        sleep(300)
+//        before1 = before2
+//        before2 = after1
+//        after1 = after2
+//      }
       sleep(2_000)
       receiver.send(new ShortMessage(ShortMessage.CONTROL_CHANGE, 0, 0x78, 100), -1);
       sleep(1_000)
